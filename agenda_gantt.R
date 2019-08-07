@@ -13,7 +13,7 @@ library(tidyr)
 here <- here::here()
 
 # input
-DF <- data.frame(stringsAsFactors=FALSE,
+df <- data.frame(stringsAsFactors=FALSE,
                  task = c("Task1", "Task2", "Task3", "Task4", "Task5", "Task6", "Task7"),
                  status = c("active, crit", "active, crit", "crit", "active", "crit", "crit", "active, crit"),
                  pos = c("one", "two", "two", "thr", "thr1", "thr2", "thr3"),
