@@ -25,7 +25,7 @@ library(here)
 df <- file.info(list.files(here::here("data"), full.names = T))
 df <- read_rds(rownames(df)[which.max(df$mtime)])
 
-ui <- shinyUI(fluidPage(
+ui <- fluidPage(
     
     titlePanel("ganttrrr"),
     sidebarLayout(
@@ -58,9 +58,9 @@ ui <- shinyUI(fluidPage(
         
     )
   ))
-  )
   
-server <- shinyServer(function(input, output) {
+  
+server <- function(input, output) {
     
     values <- reactiveValues(df = NULL)
     
@@ -173,8 +173,8 @@ server <- shinyServer(function(input, output) {
       diagram()
     })
     
-  })
+}
+
   
   ## run app 
-  runApp(list(ui = ui, server = server))
-  return(invisible())
+shinyApp(ui = ui, server = server)
