@@ -93,7 +93,7 @@ server <- shinyServer(function(input, output) {
     ## Create Chart
     diagram <- 
       eventReactive(input$create, {
-        df <- readRDS(here::here("data", sprintf("%s.rds", Sys.Date()))) %>% data.frame()
+        df <- readRDS(here::here("data", sprintf("%s.rds", Sys.Date()))) %>% data.frame
         one <- df %>% filter(pos %in% str_subset(df$pos, "^one")) # Category 1
         two <- df %>% filter(pos %in% str_subset(df$pos, "^two")) # Category 2
         thr <- df %>% filter(pos %in% str_subset(df$pos, "^thr")) # Category 3
