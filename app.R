@@ -1,5 +1,12 @@
+#########################
+# Creating ganttrrr app #
+#########################
+
 # resources:
 # https://stackoverflow.com/questions/22272571/data-input-via-shinytable-in-r-shiny-application
+# https://rdrr.io/cran/DiagrammeR/man/grVizOutput.html
+# https://shiny.rstudio.com/articles/action-buttons.html
+
 # libraries ---------------------------------------------------------------
 
 library(tidyverse)
@@ -7,73 +14,163 @@ library(shiny)
 library(shinythemes)
 library(shinydashboard)
 library(rhandsontable)
+library(htmlwidgets)
+library(DiagrammeR)
+library(glue)
+library(here)
 
-(DF <- data.frame(stringsAsFactors=FALSE,
-                 task = c("Task1", "Task2", "Task3", "Task4", "Task5", "Task6", "Task7"),
-                 status = c("active, crit", "active, crit", "crit", "active", "crit", "crit", "active, crit"),
-                 pos = c("one", "two", "two", "thr", "thr1", "thr2", "thr3"),
-                 start = c("2019-04-05", "after one", "after one", "after two", "after thr", "after thr1", "after thr2"),
-                 end = c("1d", "7d", "3d", "4d", "3d", "2d", "1d")
-))
+# app ---------------------------------------------------------------------
 
-editTable <- function(DF, outdir=getwd(), outfilename="table"){
-  ui <- shinyUI(fluidPage(
+# read the most recent gantt data file
+df <- file.info(list.files(here::here("data"), full.names = T))
+df <- read_rds(rownames(df)[which.max(df$mtime)])
+
+ui <- shinyUI(fluidPage(
     
-    titlePanel("Edit and save a table"),
+    titlePanel("ganttrrr"),
     sidebarLayout(
       sidebarPanel(
-        helpText("Shiny app based on an example given in the rhandsontable package.", 
+        helpText("Shiny App for Creating Gantt Charts",
+                 tags$br(),
+                 tags$br(),
                  "Right-click on the table to delete/insert rows.", 
-                 "Double-click on a cell to edit"),
+                 tags$br(),
+                 "Double-click on a cell to edit."),
+        
+        #wellPanel(
+          #h3("Table options"),
+          #radioButtons("useType", "Use Data Types", c("TRUE", "FALSE"))
+        #),
+        #br(), 
         
         wellPanel(
-          h3("Table options"),
-          radioButtons("useType", "Use Data Types", c("TRUE", "FALSE"))
-        ),
-        br(), 
-        
-        wellPanel(
-          h3("Save"), 
-          actionButton("save", "Save table")
+          h3("Save & Create Chart"), 
+          actionButton("save", "Save Table"),
+          actionButton("create", "Create Chart")
         )        
         
       ),
       
       mainPanel(
         
-        rHandsontableOutput("hot")
+        rHandsontableOutput("hot"),
+        DiagrammeROutput("gantt")
         
-      )
     )
   ))
+  )
   
-  server <- shinyServer(function(input, output) {
+server <- shinyServer(function(input, output) {
     
-    values <- reactiveValues()
+    values <- reactiveValues(df = NULL)
     
     ## Handsontable
     observe({
       if (!is.null(input$hot)) {
-        DF = hot_to_r(input$hot)
+        df = hot_to_r(input$hot)
       } else {
-        if (is.null(values[["DF"]]))
-          DF <- DF
+        if (is.null(values[["df"]]))
+          df <- df
         else
-          DF <- values[["DF"]]
+          df <- values[["df"]]
       }
-      values[["DF"]] <- DF
+      values[["df"]] <- df
     })
     
     output$hot <- renderRHandsontable({
-      DF <- values[["DF"]]
-      if (!is.null(DF))
-        rhandsontable(DF, useTypes = as.logical(input$useType), stretchH = "all")
+      df <- values[["df"]]
+      if (!is.null(df))
+        rhandsontable(df, stretchH = "all")
     })
     
     ## Save 
     observeEvent(input$save, {
-      finalDF <- isolate(values[["DF"]])
-      saveRDS(finalDF, file=file.path(outdir, sprintf("%s.rds", outfilename)))
+      finaldf <- isolate(values[["df"]])
+      saveRDS(finaldf, file = file.path(here::here("data", sprintf("%s.rds", Sys.Date()))))
+    })
+
+    
+    ## Create Chart
+    diagram <- 
+      eventReactive(input$create, {
+        df <- readRDS(here::here("data", sprintf("%s.rds", Sys.Date()))) %>% data.frame()
+        one <- df %>% filter(pos %in% str_subset(df$pos, "^one")) # Category 1
+        two <- df %>% filter(pos %in% str_subset(df$pos, "^two")) # Category 2
+        thr <- df %>% filter(pos %in% str_subset(df$pos, "^thr")) # Category 3
+        fou <- df %>% filter(pos %in% str_subset(df$pos, "^fou")) # Category 4
+        fiv <- df %>% filter(pos %in% str_subset(df$pos, "^fiv")) # Category 5
+        six <- df %>% filter(pos %in% str_subset(df$pos, "^six")) # Category 6
+        sev <- df %>% filter(pos %in% str_subset(df$pos, "^sev")) # Category 7
+        
+        gantt <-
+          DiagrammeR::mermaid(
+            paste0(
+              "gantt", "\n",
+              "dateFormat YYYY-MM-DD", "\n",
+              "section Category 1", "\n",
+              paste(one %>%
+                      unite(i, task, status, sep = ":") %>%
+                      unite(j, i, pos, start, end, sep = ",") %>%
+                      .$j,
+                    collapse = "\n"
+              ), "\n",
+              "section Category 2", "\n",
+              paste(two %>%
+                      unite(i, task, status, sep = ":") %>%
+                      unite(j, i, pos, start, end, sep = ",") %>%
+                      .$j,
+                    collapse = "\n"
+              ), "\n",
+              "section Category 3", "\n",
+              paste(thr %>%
+                      unite(i, task, status, sep = ":") %>%
+                      unite(j, i, pos, start, end, sep = ",") %>%
+                      .$j,
+                    collapse = "\n"
+              ), "\n",
+              "section Category 4", "\n",
+              paste(fou %>%
+                      unite(i, task, status, sep = ":") %>%
+                      unite(j, i, pos, start, end, sep = ",") %>%
+                      .$j,
+                    collapse = "\n"
+              ), "\n",
+              "section Category 5", "\n",
+              paste(fiv %>%
+                      unite(i, task, status, sep = ":") %>%
+                      unite(j, i, pos, start, end, sep = ",") %>%
+                      .$j,
+                    collapse = "\n"
+              ), "\n",
+              "section Category 6", "\n",
+              paste(six %>%
+                      unite(i, task, status, sep = ":") %>%
+                      unite(j, i, pos, start, end, sep = ",") %>%
+                      .$j,
+                    collapse = "\n"
+              ), "\n",
+              "section Category 7", "\n",
+              paste(sev %>%
+                      unite(i, task, status, sep = ":") %>%
+                      unite(j, i, pos, start, end, sep = ",") %>%
+                      .$j,
+                    collapse = "\n"
+              ), "\n"
+            ), width = 1000
+          )
+        gantt$x$config = list(ganttConfig = list(
+          axisFormatter = list(list(
+            "%d%b%y"
+            ,htmlwidgets::JS(
+              'function(d){ return d.getDay() == 1 }'
+            )
+          ))
+        ))
+        gantt
+    })
+    
+    output$gantt <- renderDiagrammeR({
+      diagram()
     })
     
   })
@@ -81,6 +178,3 @@ editTable <- function(DF, outdir=getwd(), outfilename="table"){
   ## run app 
   runApp(list(ui = ui, server = server))
   return(invisible())
-}
-
-editTable(DF)
