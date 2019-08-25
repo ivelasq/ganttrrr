@@ -170,6 +170,7 @@ server <- function(input, output) {
     })
     
     output$gantt <- renderDiagrammeR({
+      req(diagram())
       diagram()
     })
     
