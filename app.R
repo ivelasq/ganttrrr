@@ -16,6 +16,8 @@ library(shinydashboard)
 library(rhandsontable)
 library(htmlwidgets)
 library(DiagrammeR)
+library(DiagrammeRsvg)
+library(rsvg)
 library(glue)
 library(here)
 
@@ -26,16 +28,17 @@ df <- file.info(list.files(here::here("data"), full.names = T))
 df <- read_rds(rownames(df)[which.max(df$mtime)])
 
 ui <- fluidPage(
-    
-    titlePanel("ganttrrr"),
+  titlePanel("ganttrrr"),
     sidebarLayout(
       sidebarPanel(
-        helpText("Shiny App for Creating Gantt Charts",
+        helpText("Shiny App for Creating Gantt Charts using DiagrammeR::mermaid",
                  tags$br(),
                  tags$br(),
                  "Right-click on the table to delete/insert rows.", 
                  tags$br(),
-                 "Double-click on a cell to edit."),
+                 "Double-click on a cell to edit.",
+                 tags$br(),
+                 "Once edited, save table and create chart."),
         
         #wellPanel(
           #h3("Table options"),
@@ -44,9 +47,10 @@ ui <- fluidPage(
         #br(), 
         
         wellPanel(
-          h3("Save & Create Chart"), 
+          h4("Save & Create Chart"), 
           actionButton("save", "Save Table"),
-          actionButton("create", "Create Chart")
+          actionButton("create", "Create Chart"),
+          downloadButton('export', "Export PDF")
         )        
         
       ),
@@ -89,7 +93,6 @@ server <- function(input, output) {
       saveRDS(finaldf, file = file.path(here::here("data", sprintf("%s.rds", Sys.Date()))))
     })
 
-    
     ## Create Chart
     diagram <- 
       eventReactive(input$create, {
@@ -171,9 +174,16 @@ server <- function(input, output) {
     
     output$gantt <- renderDiagrammeR({
       req(diagram())
-      diagram()
+      diagram() 
     })
     
+    output$export <- 
+      downloadHandler(filename = "gantt_chart.pdf",
+                      content = function(file) {
+                        renderDiagrammeR(diagram()) # simple, independent function
+                        dev.off()
+                        },
+                      contentType = "application/pdf")
 }
 
   
