@@ -1,0 +1,11 @@
+/*Reference: https://shiny.rstudio.com/articles/css.html*/
+      
+@import url('//fonts.googleapis.com/css?family=Lobster|Cabin|Homemade+Apple:400,700');
+      
+h2 {
+  font-family: "Homemade Apple";
+  font-size: 52px;
+  line-height: 1.8;
+  padding: 18px;
+  color: #024059;
+}

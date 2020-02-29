@@ -3,6 +3,7 @@
 #########################
 
 # resources:
+
 # https://stackoverflow.com/questions/22272571/data-input-via-shinytable-in-r-shiny-application
 # https://rdrr.io/cran/DiagrammeR/man/grVizOutput.html
 # https://shiny.rstudio.com/articles/action-buttons.html
@@ -22,10 +23,14 @@ library(here)
 # app ---------------------------------------------------------------------
 
 # read the most recent gantt data file
+
 df <- file.info(list.files(here::here("data"), full.names = T))
 df <- read_rds(rownames(df)[which.max(df$mtime)])
 
 ui <- fluidPage(
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+  ),
   titlePanel("ganttrrr"),
     sidebarLayout(
       sidebarPanel(
@@ -37,29 +42,31 @@ ui <- fluidPage(
                  "Double-click on a cell to edit.",
                  tags$br(),
                  "Once edited, save table and create chart."),
-        
-        #wellPanel(
-          #h3("Table options"),
-          #radioButtons("useType", "Use Data Types", c("TRUE", "FALSE"))
-        #),
-        #br(), 
-        
+        # 
+        # wellPanel(
+        #   h3("Table options"),
+        #   radioButtons("useType", "Use Data Types", c("TRUE", "FALSE"))
+        # ),
+        # br(), 
+        # 
         wellPanel(
           h4("Save & Create Chart"), 
           actionButton("save", "Save Table"),
+          tags$br(),
+          tags$br(),
           actionButton("create", "Create Chart"),
-          downloadButton('export', "Export PDF")
+          tags$br(),
+          tags$br(),
+          downloadButton("export", "Export PDF")
         )        
         
-      ),
+      ), # sidebarPanel
       
-      mainPanel(
-        
-        rHandsontableOutput("hot"),
-        DiagrammeROutput("gantt")
-        
-    )
-  ))
+      mainPanel(rHandsontableOutput("hot"),
+                DiagrammeROutput("gantt_render"))
+      
+    ) # sidebarLayout
+  ) # fluid page
   
   
 server <- function(input, output) {
@@ -67,6 +74,7 @@ server <- function(input, output) {
     values <- reactiveValues(df = NULL, gantt = NULL)
     
     ## Handsontable
+    
     observe({
       if (!is.null(input$hot)) {
         df = hot_to_r(input$hot)
@@ -85,7 +93,8 @@ server <- function(input, output) {
         rhandsontable(df, stretchH = "all")
     })
     
-    ## Save 
+    ## Save
+    
     observeEvent(input$save, {
       finaldf <- isolate(values[["df"]])
       saveRDS(finaldf, file = file.path(here::here("data", sprintf("%s.rds", Sys.Date()))))
@@ -93,6 +102,7 @@ server <- function(input, output) {
 
     
     ## Create Chart
+  
     diagram <- 
       eventReactive(input$create, {
         df <- readRDS(here::here("data", sprintf("%s.rds", Sys.Date()))) %>% data.frame
@@ -171,21 +181,28 @@ server <- function(input, output) {
         gantt
     })
     
-    output$gantt <- renderDiagrammeR({
+    output$gantt_render <- renderDiagrammeR({
       req(diagram())
       diagram()
     })
     
-    output$export = downloadHandler(
-      filename = function() {"gantt_chart.pdf"},
+    # output$export = downloadHandler(
+    #   filename = function() {"gantt_chart.pdf"},
+    #   content = function(file) {
+    #     pdf(file, onefile = TRUE)
+    #     values$gantt %>%
+    #       htmltools::html_print() %>%
+    #       webshot::webshot(file = "gantt_chart.pdf") 
+    #     dev.off()
+    #   }
+    # )
+    
+    output$Save_diagrammeR_plot <- downloadHandler(
+      filename = "gantt_chart.html",
       content = function(file) {
-        pdf(file, onefile = TRUE)
-        values$gantt %>%
-          htmltools::html_print() %>%
-          webshot::webshot(file = "gantt_chart.pdf") 
-        dev.off()
+        save_html(renderDiagrammeR(req(diagram())))
       }
-    )
+)
 }
 
   

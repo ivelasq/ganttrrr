@@ -96,4 +96,5 @@ gantt$x$config = list(ganttConfig = list(
   ))
 ))
 gantt
-save_html(gantt, file = glue("{here}/agenda_gantt.html"))
+
+# save_html(gantt, file = glue("{here}/agenda_gantt.html"))
