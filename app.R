@@ -16,8 +16,6 @@ library(shinydashboard)
 library(rhandsontable)
 library(htmlwidgets)
 library(DiagrammeR)
-library(DiagrammeRsvg)
-library(rsvg)
 library(glue)
 library(here)
 
@@ -66,7 +64,7 @@ ui <- fluidPage(
   
 server <- function(input, output) {
     
-    values <- reactiveValues(df = NULL)
+    values <- reactiveValues(df = NULL, gantt = NULL)
     
     ## Handsontable
     observe({
@@ -93,6 +91,7 @@ server <- function(input, output) {
       saveRDS(finaldf, file = file.path(here::here("data", sprintf("%s.rds", Sys.Date()))))
     })
 
+    
     ## Create Chart
     diagram <- 
       eventReactive(input$create, {
@@ -174,16 +173,19 @@ server <- function(input, output) {
     
     output$gantt <- renderDiagrammeR({
       req(diagram())
-      diagram() 
+      diagram()
     })
     
-    output$export <- 
-      downloadHandler(filename = "gantt_chart.pdf",
-                      content = function(file) {
-                        renderDiagrammeR(diagram()) # simple, independent function
-                        dev.off()
-                        },
-                      contentType = "application/pdf")
+    output$export = downloadHandler(
+      filename = function() {"gantt_chart.pdf"},
+      content = function(file) {
+        pdf(file, onefile = TRUE)
+        values$gantt %>%
+          htmltools::html_print() %>%
+          webshot::webshot(file = "gantt_chart.pdf") 
+        dev.off()
+      }
+    )
 }
 
   
