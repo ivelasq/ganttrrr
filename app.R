@@ -67,8 +67,9 @@ ui <- fluidPage(
                  ),
         wellPanel(
           actionButton("load1", "Load Example 1: Creating an R Package"),
-          actionButton("load2", "Load Example 2: rstudio::conf20 Agenda"),
+          actionButton("load2", "Load Example 2: rstudio::conf(2020) Agenda"),
           actionButton("save", "Save Table & Create Chart"),
+          actionButton("clear", "Clear Table")
           # tags$br(),
           # tags$br(),
           # downloadButton("export", "Export PDF")
@@ -125,6 +126,50 @@ server <- function(input, output) {
   observeEvent(input$load2, {
     
     df <- readRDS(here::here("data", "example2.rds"))
+    
+    output$hot <- renderRHandsontable({
+      rhandsontable(df, stretchH = "all") %>%
+        hot_col(
+          col = "Status",
+          type = "dropdown",
+          source = c("To Do", "In Progress", "Done")
+        ) %>%
+        hot_col(col = "Critical", halign = "htCenter") %>%
+        hot_col(col = "Start",
+                type = "date",
+                dateFormat = "YYYY-MM-DD") %>%
+        hot_context_menu(customOpts = list(csv = list(
+          name = "Download to CSV",
+          callback = htmlwidgets::JS(
+            "function (key, options) {
+                         var csv = csvString(this);
+                         var link = document.createElement('a');
+                         link.setAttribute('href', 'data:text/plain;charset=utf-8,' +
+                           encodeURIComponent(csv));
+                         link.setAttribute('download', 'data.csv');
+                         document.body.appendChild(link);
+                         link.click();
+                         document.body.removeChild(link);
+                       }"
+          )
+        )))
+    })
+  })
+  
+  # Clear Table
+  
+  observeEvent(input$clear, {
+    
+    df <-
+      data.frame(
+        Category = c(rep(NA_character_, 7)),
+        Task =  c(rep(NA_character_, 7)),
+        Status = c(rep(NA_character_, 7)),
+        Critical = c(rep(FALSE, 7)),
+        Start = c(rep(NA_character_, 7)),
+        Duration = c(rep(NA_integer_, 7)),
+        stringsAsFactors = FALSE
+      )
     
     output$hot <- renderRHandsontable({
       rhandsontable(df, stretchH = "all") %>%
