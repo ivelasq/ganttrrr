@@ -67,6 +67,7 @@ ui <- fluidPage(
                  ),
         wellPanel(
           actionButton("load1", "Load Example 1: Creating an R Package"),
+          actionButton("load2", "Load Example 2: rstudio::conf20 Agenda"),
           actionButton("save", "Save Table & Create Chart"),
           # tags$br(),
           # tags$br(),
@@ -84,9 +85,46 @@ ui <- fluidPage(
   
 server <- function(input, output) {
   
+  # Load Example 1
+  
   observeEvent(input$load1, {
 
-    df <- readRDS(here::here("data", "example.rds"))
+    df <- readRDS(here::here("data", "example1.rds"))
+    
+    output$hot <- renderRHandsontable({
+      rhandsontable(df, stretchH = "all") %>%
+        hot_col(
+          col = "Status",
+          type = "dropdown",
+          source = c("To Do", "In Progress", "Done")
+        ) %>%
+        hot_col(col = "Critical", halign = "htCenter") %>%
+        hot_col(col = "Start",
+                type = "date",
+                dateFormat = "YYYY-MM-DD") %>%
+        hot_context_menu(customOpts = list(csv = list(
+          name = "Download to CSV",
+          callback = htmlwidgets::JS(
+            "function (key, options) {
+                         var csv = csvString(this);
+                         var link = document.createElement('a');
+                         link.setAttribute('href', 'data:text/plain;charset=utf-8,' +
+                           encodeURIComponent(csv));
+                         link.setAttribute('download', 'data.csv');
+                         document.body.appendChild(link);
+                         link.click();
+                         document.body.removeChild(link);
+                       }"
+          )
+        )))
+    })
+  })
+  
+  # Load Example 2
+  
+  observeEvent(input$load2, {
+    
+    df <- readRDS(here::here("data", "example2.rds"))
     
     output$hot <- renderRHandsontable({
       rhandsontable(df, stretchH = "all") %>%

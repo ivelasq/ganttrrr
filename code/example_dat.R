@@ -1,3 +1,4 @@
+# old example
 # df <- data.frame(
 #   stringsAsFactors = FALSE,
 #               Task = c("hfjk", "jksjf", "jksjf", "jksjf", "jksjf", "jksjf"),
@@ -8,6 +9,8 @@
 #                        "2019-02-01", "2019-02-03", "2019-02-01", "2019-02-01"),
 #                Duration = c(1, 7, 3, 4, 3, 2)
 # )
+
+# example 1
 
 ex1 <-
   data.frame(
@@ -28,6 +31,8 @@ ex1 <-
                 Duration = c(1L, 5L, 3L, 5L, 3L, 2L, 7L, 5L)
    )
 
+# checking mutate
+
 df <-
   ex2 %>% 
   data.frame %>% 
@@ -43,3 +48,28 @@ df <-
   select(-Status, -Critical, -Start, -Duration) %>% 
   rename(task = Task,
          pos = Category)
+
+# example 2
+
+ex2 <-
+  data.frame(
+    stringsAsFactors = FALSE,
+    Category = c("one", "two", "thr", "thr2", "thr3"),
+    Task = c(
+      "Tidy Time Series Analysis and Forecasting Workshop",
+      "RStudio Instructor Training Workshop",
+      "R-Ladies kickoff breakfast",
+      "rstudio conf Day 1",
+      "rstudio conf Day 2"
+    ),
+    Status = c("Done", "Done", "In Progress", "In Progress", "To Do"),
+    Critical = c(FALSE, TRUE, FALSE, TRUE, TRUE),
+    Start = c(
+      "2020-01-27",
+      "2020-01-28",
+      "2020-01-29",
+      "2020-01-29",
+      "2020-01-30"
+    ),
+    Duration = c(2L, 1L, 1L, 1L, 1L)
+  )
