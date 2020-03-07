@@ -1,15 +1,15 @@
-df <- data.frame(
-  stringsAsFactors = FALSE,
-              Task = c("hfjk", "jksjf", "jksjf", "jksjf", "jksjf", "jksjf"),
-            Status = c("In Progress", "To Do","To Do","In Progress","Done", "Done"),
-          Critical = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE),
-          Category = c("one", "two", "two", "thr", "thr1", "thr2"),
-             Start = c("2019-02-01", "2019-02-02",
-                       "2019-02-01", "2019-02-03", "2019-02-01", "2019-02-01"),
-               Duration = c(1, 7, 3, 4, 3, 2)
-)
+# df <- data.frame(
+#   stringsAsFactors = FALSE,
+#               Task = c("hfjk", "jksjf", "jksjf", "jksjf", "jksjf", "jksjf"),
+#             Status = c("In Progress", "To Do","To Do","In Progress","Done", "Done"),
+#           Critical = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE),
+#           Category = c("one", "two", "two", "thr", "thr1", "thr2"),
+#              Start = c("2019-02-01", "2019-02-02",
+#                        "2019-02-01", "2019-02-03", "2019-02-01", "2019-02-01"),
+#                Duration = c(1, 7, 3, 4, 3, 2)
+# )
 
-ex2 <-
+ex1 <-
   data.frame(
   stringsAsFactors = FALSE,
                    Category = c("one","two","two2",

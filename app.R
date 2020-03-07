@@ -26,22 +26,22 @@ values <- list()
 setHot <- function(x) 
   values[["hot"]] <<- x 
 
-df <- 
-  data.frame(Category = c(rep(NA_character_, 7)),
-             Task =  c(rep(NA_character_, 7)),
-             Status = c(rep(NA_character_, 7)),
-             Critical = c(rep(FALSE, 7)),
-             Start = c(rep(NA_character_, 7)),
-             Duration = c(rep(NA_integer_, 7)),
-             stringsAsFactors = FALSE)
+df <-
+  data.frame(
+    Category = c(rep(NA_character_, 7)),
+    Task =  c(rep(NA_character_, 7)),
+    Status = c(rep(NA_character_, 7)),
+    Critical = c(rep(FALSE, 7)),
+    Start = c(rep(NA_character_, 7)),
+    Duration = c(rep(NA_integer_, 7)),
+    stringsAsFactors = FALSE
+  )
 
 ui <- fluidPage(
   
   # css 
   
-  tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
-  ),
+  tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "style.css")), 
   
   # header panel
   
@@ -52,8 +52,8 @@ ui <- fluidPage(
              h1("ganttrrr")), 
       column(9, 
              h2("A Shiny App for Creating Gantt Charts Using DiagrammeR::mermaid()")),
-    )
-  ),
+      )
+    ),
   
   # sidebar layout
   
@@ -66,7 +66,7 @@ ui <- fluidPage(
                  "Once edited, save table and create chart."
                  ),
         wellPanel(
-          h4("Save & Create Chart"), 
+          actionButton("load1", "Load Example 1: Creating an R Package"),
           actionButton("save", "Save Table & Create Chart"),
           # tags$br(),
           # tags$br(),
@@ -84,23 +84,21 @@ ui <- fluidPage(
   
 server <- function(input, output) {
   
-    ## Handsontable
-    
-    observe({
-      if (!is.null(input$hot)){
-        df <- (hot_to_r(input$hot))
-        setHot(df)
-      } 
-    })
+  observeEvent(input$load1, {
+
+    df <- readRDS(here::here("data", "example.rds"))
     
     output$hot <- renderRHandsontable({
       rhandsontable(df, stretchH = "all") %>%
         hot_col(
           col = "Status",
           type = "dropdown",
-          source = c("To Do", "In Progress", "Done")) %>%
-        hot_col(col = "Critical", halign = "htCenter") %>% 
-        hot_col(col = "Start", type = "date", dateFormat = "YYYY-MM-DD") %>%
+          source = c("To Do", "In Progress", "Done")
+        ) %>%
+        hot_col(col = "Critical", halign = "htCenter") %>%
+        hot_col(col = "Start",
+                type = "date",
+                dateFormat = "YYYY-MM-DD") %>%
         hot_context_menu(customOpts = list(csv = list(
           name = "Download to CSV",
           callback = htmlwidgets::JS(
@@ -117,6 +115,44 @@ server <- function(input, output) {
           )
         )))
     })
+  })
+  
+  ## Handsontable
+    
+  observe({
+    if (!is.null(input$hot)) {
+      df <- (hot_to_r(input$hot))
+      setHot(df)
+    }
+  })
+  
+  output$hot <- renderRHandsontable({
+    rhandsontable(df, stretchH = "all") %>%
+      hot_col(
+        col = "Status",
+        type = "dropdown",
+        source = c("To Do", "In Progress", "Done")
+      ) %>%
+      hot_col(col = "Critical", halign = "htCenter") %>%
+      hot_col(col = "Start",
+              type = "date",
+              dateFormat = "YYYY-MM-DD") %>%
+      hot_context_menu(customOpts = list(csv = list(
+        name = "Download to CSV",
+        callback = htmlwidgets::JS(
+          "function (key, options) {
+                         var csv = csvString(this);
+                         var link = document.createElement('a');
+                         link.setAttribute('href', 'data:text/plain;charset=utf-8,' +
+                           encodeURIComponent(csv));
+                         link.setAttribute('download', 'data.csv');
+                         document.body.appendChild(link);
+                         link.click();
+                         document.body.removeChild(link);
+                       }"
+        )
+      )))
+  })
     
     diagram <- 
       eventReactive(input$save, {

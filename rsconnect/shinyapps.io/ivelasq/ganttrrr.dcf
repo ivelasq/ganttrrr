@@ -5,8 +5,9 @@ account: ivelasq
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1072347
-bundleId: 2859471
+bundleId: 2860135
 url: https://ivelasq.shinyapps.io/ganttrrr/
-when: 1583572354.49815
+when: 1583607353.67917
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: code/example_dat.R|code/original app.R|data/2020-03-07.rds|data/example.rds
