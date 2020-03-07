@@ -67,10 +67,7 @@ ui <- fluidPage(
                  ),
         wellPanel(
           h4("Save & Create Chart"), 
-          actionButton("save", "Save Table"),
-          tags$br(),
-          tags$br(),
-          actionButton("create", "Create Chart"),
+          actionButton("save", "Save Table & Create Chart"),
           tags$br(),
           tags$br(),
           downloadButton("export", "Export PDF")
@@ -87,15 +84,6 @@ ui <- fluidPage(
   
 server <- function(input, output) {
   
-    ## Save changes
-    
-    observe({
-      input$save # update dataframe file each time the button is pressed
-      if (!is.null(values[["hot"]])) { # if there's a table input
-        df <<- values$hot
-      }
-    })
-    
     ## Handsontable
     
     observe({
@@ -132,10 +120,12 @@ server <- function(input, output) {
         )))
     })
     
-    ## Create Chart
-  
     diagram <- 
-      eventReactive(input$create, {
+      eventReactive(input$save, {
+        
+        if (!is.null(values[["hot"]])) { # if there's a table input
+          df <<- values$hot
+        }
         
         # make table mermaid-friendly
         
