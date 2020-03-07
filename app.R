@@ -22,10 +22,18 @@ library(here)
 
 # app ---------------------------------------------------------------------
 
-# read the most recent gantt data file
+values <- list()
+setHot <- function(x) 
+  values[["hot"]] <<- x 
 
-df <- file.info(list.files(here::here("data"), full.names = T))
-df <- read_rds(rownames(df)[which.max(df$mtime)])
+df <- 
+  data.frame(Task =  c(rep(NA_character_, 7)),
+             Status = c(rep(NA_character_, 7)),
+             Critical = c(rep(FALSE, 7)),
+             Position = c(rep(NA_character_, 7)),
+             Start = c(rep(NA, 7)),
+             Duration = c(rep(NA_real_, 7)),
+             stringsAsFactors = FALSE)
 
 ui <- fluidPage(
   
@@ -38,11 +46,12 @@ ui <- fluidPage(
   # header panel
   
   titlePanel(
+    windowTitle = "ganttrrrrrrrrrrr",
     fluidRow(
       column(3, 
              h1("ganttrrr")), 
       column(9, 
-             h2("A Shiny App for Creating Gantt Charts using DiagrammeR::mermaid"))
+             h2("A Shiny App for Creating Gantt Charts using DiagrammeR::mermaid")),
     )
   ),
   
@@ -77,42 +86,71 @@ ui <- fluidPage(
   
   
 server <- function(input, output) {
+  
+    ## Save changes
     
-    values <- reactiveValues(df = NULL, gantt = NULL)
+    observe({
+      input$save # update dataframe file each time the button is pressed
+      if (!is.null(values[["hot"]])) { # if there's a table input
+        df <<- values$hot
+      }
+    })
     
     ## Handsontable
     
     observe({
-      if (!is.null(input$hot)) {
-        df = hot_to_r(input$hot)
-      } else {
-        if (is.null(values[["df"]]))
-          df <- df
-        else
-          df <- values[["df"]]
-      }
-      values[["df"]] <- df
+      if (!is.null(input$hot)){
+        df <- (hot_to_r(input$hot))
+        setHot(df)
+      } 
     })
     
     output$hot <- renderRHandsontable({
-      df <- values[["df"]]
-      if (!is.null(df))
-        rhandsontable(df, stretchH = "all")
+      rhandsontable(df, stretchH = "all") %>%
+        hot_col(
+          col = "Status",
+          type = "dropdown",
+          source = c("Not Active", "Active", "Done"),
+          allowInvalid = FALSE
+        ) %>%
+        hot_col(col = "Critical", halign = "htCenter") %>% 
+        hot_col(col = "Start", type = "date") %>%
+        hot_context_menu(customOpts = list(csv = list(
+          name = "Download to CSV",
+          callback = htmlwidgets::JS(
+            "function (key, options) {
+                         var csv = csvString(this);
+                         var link = document.createElement('a');
+                         link.setAttribute('href', 'data:text/plain;charset=utf-8,' +
+                           encodeURIComponent(csv));
+                         link.setAttribute('download', 'data.csv');
+                         document.body.appendChild(link);
+                         link.click();
+                         document.body.removeChild(link);
+                       }"
+          )
+        )))
     })
-    
-    ## Save
-    
-    observeEvent(input$save, {
-      finaldf <- isolate(values[["df"]])
-      saveRDS(finaldf, file = file.path(here::here("data", sprintf("%s.rds", Sys.Date()))))
-    })
-
     
     ## Create Chart
   
     diagram <- 
       eventReactive(input$create, {
-        df %>% data.frame
+        
+        # make table mermaid-friendly
+        
+        df <-
+          df %>% 
+          data.frame %>% 
+          mutate(status = case_when(Status == "Not Active" & Critical == TRUE ~ "crit",
+                                    Status != "Not Active" & Critical == TRUE ~ tolower(paste0(Status, ", crit")),
+                                    TRUE ~ tolower(Status))) %>% 
+          select(-Status, -Critical) %>% 
+          rename(task = Task,
+                 pos = Position,
+                 start = Start,
+                 end = Duration)
+        
         one <- df %>% filter(pos %in% str_subset(df$pos, "^one")) # Category 1
         two <- df %>% filter(pos %in% str_subset(df$pos, "^two")) # Category 2
         thr <- df %>% filter(pos %in% str_subset(df$pos, "^thr")) # Category 3
