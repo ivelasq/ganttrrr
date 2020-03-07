@@ -31,7 +31,7 @@ df <-
              Status = c(rep(NA_character_, 7)),
              Critical = c(rep(FALSE, 7)),
              Position = c(rep(NA_character_, 7)),
-             Start = c(rep(NA, 7)),
+             Start = c(rep(NA_character_, 7)),
              Duration = c(rep(NA_real_, 7)),
              stringsAsFactors = FALSE)
 
@@ -114,7 +114,7 @@ server <- function(input, output) {
           allowInvalid = FALSE
         ) %>%
         hot_col(col = "Critical", halign = "htCenter") %>% 
-        hot_col(col = "Start", type = "date") %>%
+        hot_col(col = "Start", type = "date", dateFormat = "YYYY-MM-DD") %>%
         hot_context_menu(customOpts = list(csv = list(
           name = "Download to CSV",
           callback = htmlwidgets::JS(
@@ -144,12 +144,12 @@ server <- function(input, output) {
           data.frame %>% 
           mutate(status = case_when(Status == "Not Active" & Critical == TRUE ~ "crit",
                                     Status != "Not Active" & Critical == TRUE ~ tolower(paste0(Status, ", crit")),
-                                    TRUE ~ tolower(Status))) %>% 
-          select(-Status, -Critical) %>% 
+                                    TRUE ~ tolower(Status)),
+                 start = as.Date(Start, "%Y-%m-%d"),
+                 end = paste0(Duration, "d")) %>% 
+          select(-Status, -Critical, -Start, -Duration) %>% 
           rename(task = Task,
-                 pos = Position,
-                 start = Start,
-                 end = Duration)
+                 pos = Position)
         
         one <- df %>% filter(pos %in% str_subset(df$pos, "^one")) # Category 1
         two <- df %>% filter(pos %in% str_subset(df$pos, "^two")) # Category 2
