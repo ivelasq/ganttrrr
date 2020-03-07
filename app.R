@@ -32,7 +32,7 @@ df <-
              Critical = c(rep(FALSE, 7)),
              Position = c(rep(NA_character_, 7)),
              Start = c(rep(NA_character_, 7)),
-             Duration = c(rep(NA_real_, 7)),
+             Duration = c(rep(NA_integer_, 7)),
              stringsAsFactors = FALSE)
 
 ui <- fluidPage(
