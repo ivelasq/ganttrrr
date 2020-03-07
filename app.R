@@ -29,10 +29,10 @@ setHot <- function(x)
 df <- 
   data.frame(Category = c(rep(NA_character_, 7)),
              Task =  c(rep(NA_character_, 7)),
+             Status = c(rep(NA_character_, 7)),
+             Critical = c(rep(FALSE, 7)),
              Start = c(rep(NA_character_, 7)),
              Duration = c(rep(NA_integer_, 7)),
-             Status = c(rep(NA_character_, 7)),
-             Critical = c(rep(FALSE, 7)), 
              stringsAsFactors = FALSE)
 
 ui <- fluidPage(
@@ -98,7 +98,7 @@ server <- function(input, output) {
         hot_col(
           col = "Status",
           type = "dropdown",
-          source = c("Not Active", "Active", "Done")) %>%
+          source = c("To Do", "In Progress", "Done")) %>%
         hot_col(col = "Critical", halign = "htCenter") %>% 
         hot_col(col = "Start", type = "date", dateFormat = "YYYY-MM-DD") %>%
         hot_context_menu(customOpts = list(csv = list(
@@ -130,11 +130,15 @@ server <- function(input, output) {
         df <-
           df %>% 
           data.frame %>% 
-          mutate(status = case_when(Status == "Not Active" & Critical == TRUE ~ "crit",
-                                    Status != "Not Active" & Critical == TRUE ~ tolower(paste0(Status, ", crit")),
-                                    TRUE ~ tolower(Status)),
-                 start = as.Date(Start, "%Y-%m-%d"),
-                 end = paste0(Duration, "d")) %>% 
+          mutate(status = case_when(Status == "To Do" & Critical == TRUE ~ "crit",
+                                    Status == "To Do" & Critical == FALSE ~ "",
+                                    Status == "In Progress" & Critical == TRUE ~ "active, crit",
+                                    Status == "In Progress" & Critical == FALSE ~ "active",
+                                    Status == "Done" & Critical == TRUE ~ "done, crit",
+                                    Status == "Done" & Critical == FALSE ~ "done"
+          ),
+          start = as.Date(Start, "%Y-%m-%d"),
+          end = paste0(Duration, "d")) %>% 
           select(-Status, -Critical, -Start, -Duration) %>% 
           rename(task = Task,
                  pos = Category)
