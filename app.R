@@ -28,27 +28,34 @@ df <- file.info(list.files(here::here("data"), full.names = T))
 df <- read_rds(rownames(df)[which.max(df$mtime)])
 
 ui <- fluidPage(
+  
+  # css 
+  
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
   ),
-  titlePanel("ganttrrr"),
+  
+  # header panel
+  
+  titlePanel(
+    fluidRow(
+      column(3, 
+             h1("ganttrrr")), 
+      column(9, 
+             h2("A Shiny App for Creating Gantt Charts using DiagrammeR::mermaid"))
+    )
+  ),
+  
+  # sidebar layout
+  
     sidebarLayout(
       sidebarPanel(
-        helpText("Shiny App for Creating Gantt Charts using DiagrammeR::mermaid",
-                 tags$br(),
-                 tags$br(),
-                 "Right-click on the table to delete/insert rows.", 
+        helpText("Right-click on the table to delete/insert rows.", 
                  tags$br(),
                  "Double-click on a cell to edit.",
                  tags$br(),
-                 "Once edited, save table and create chart."),
-        # 
-        # wellPanel(
-        #   h3("Table options"),
-        #   radioButtons("useType", "Use Data Types", c("TRUE", "FALSE"))
-        # ),
-        # br(), 
-        # 
+                 "Once edited, save table and create chart."
+                 ),
         wellPanel(
           h4("Save & Create Chart"), 
           actionButton("save", "Save Table"),

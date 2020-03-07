@@ -1,11 +1,29 @@
 /*Reference: https://shiny.rstudio.com/articles/css.html*/
+/* #01648C */
+/* #193642 */
+/* #D7A852 */
+/* #C14A2D */
+/* #E4DCC9 */
       
-@import url('//fonts.googleapis.com/css?family=Lobster|Cabin|Homemade+Apple:400,700');
+@import url('//fonts.googleapis.com/css?family=Lato|Homemade+Apple:400,700');
       
-h2 {
+h1 {
   font-family: "Homemade Apple";
   font-size: 52px;
   line-height: 1.8;
   padding: 18px;
+  color: #193642;
+}
+
+h2 {
+  font-family: "Homemade Apple";
+  font-size: 32px;
+  line-height: 1.8;
+  color: #D7A852;
+}
+
+h3 {
+  font-family: "Lato";
+  font-size: 20px;
   color: #024059;
 }
