@@ -45,15 +45,26 @@ ui <- fluidPage(
   
   # header panel
   
-  titlePanel(
-    windowTitle = "ganttrrrrrrrrrrr",
-    fluidRow(
-      column(3, 
-             h1("ganttrrr")), 
-      column(9, 
-             h2("A Shiny App for Creating Gantt Charts Using DiagrammeR::mermaid()")),
-      )
-    ),
+  titlePanel(windowTitle = "ganttrrrrrrrrrrr",
+             fluidRow(column(3,
+                             h1("ganttrrr")),
+                      column(
+                        8,
+                        h2(
+                          "A Shiny App for Creating Gantt Charts Using DiagrammeR::mermaid()"
+                        )
+                      ),
+                      column(1,
+                             ( tags$a(
+                                 img(src = "Download Code.png",
+                                     align = "right",
+                                     style = "width:150px;height:150px;"),
+                                 href = "https://raw.githubusercontent.com/ivelasq/ganttrrr/master/code/agenda_gantt.R"
+                                 )
+                             ),
+                             )
+                      ) # end Fluid Row
+             ), # end Title Panel 
   
   # sidebar layout
   
