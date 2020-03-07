@@ -27,12 +27,12 @@ setHot <- function(x)
   values[["hot"]] <<- x 
 
 df <- 
-  data.frame(Task =  c(rep(NA_character_, 7)),
-             Status = c(rep(NA_character_, 7)),
-             Critical = c(rep(FALSE, 7)),
-             Position = c(rep(NA_character_, 7)),
+  data.frame(Category = c(rep(NA_character_, 7)),
+             Task =  c(rep(NA_character_, 7)),
              Start = c(rep(NA_character_, 7)),
              Duration = c(rep(NA_integer_, 7)),
+             Status = c(rep(NA_character_, 7)),
+             Critical = c(rep(FALSE, 7)), 
              stringsAsFactors = FALSE)
 
 ui <- fluidPage(
@@ -51,7 +51,7 @@ ui <- fluidPage(
       column(3, 
              h1("ganttrrr")), 
       column(9, 
-             h2("A Shiny App for Creating Gantt Charts using DiagrammeR::mermaid")),
+             h2("A Shiny App for Creating Gantt Charts Using DiagrammeR::mermaid()")),
     )
   ),
   
@@ -68,9 +68,9 @@ ui <- fluidPage(
         wellPanel(
           h4("Save & Create Chart"), 
           actionButton("save", "Save Table & Create Chart"),
-          tags$br(),
-          tags$br(),
-          downloadButton("export", "Export PDF")
+          # tags$br(),
+          # tags$br(),
+          # downloadButton("export", "Export PDF")
         )        
         
       ), # sidebarPanel
@@ -98,9 +98,7 @@ server <- function(input, output) {
         hot_col(
           col = "Status",
           type = "dropdown",
-          source = c("Not Active", "Active", "Done"),
-          allowInvalid = FALSE
-        ) %>%
+          source = c("Not Active", "Active", "Done")) %>%
         hot_col(col = "Critical", halign = "htCenter") %>% 
         hot_col(col = "Start", type = "date", dateFormat = "YYYY-MM-DD") %>%
         hot_context_menu(customOpts = list(csv = list(
@@ -124,7 +122,7 @@ server <- function(input, output) {
       eventReactive(input$save, {
         
         if (!is.null(values[["hot"]])) { # if there's a table input
-          df <<- values$hot
+          df <- values$hot
         }
         
         # make table mermaid-friendly
@@ -139,7 +137,7 @@ server <- function(input, output) {
                  end = paste0(Duration, "d")) %>% 
           select(-Status, -Critical, -Start, -Duration) %>% 
           rename(task = Task,
-                 pos = Position)
+                 pos = Category)
         
         one <- df %>% filter(pos %in% str_subset(df$pos, "^one")) # Category 1
         two <- df %>% filter(pos %in% str_subset(df$pos, "^two")) # Category 2
@@ -232,12 +230,12 @@ server <- function(input, output) {
     #   }
     # )
     
-    output$Save_diagrammeR_plot <- downloadHandler(
-      filename = "gantt_chart.html",
-      content = function(file) {
-        save_html(renderDiagrammeR(req(diagram())))
-      }
-)
+#     output$Save_diagrammeR_plot <- downloadHandler(
+#       filename = "gantt_chart.html",
+#       content = function(file) {
+#         save_html(renderDiagrammeR(req(diagram())))
+#       }
+# )
 }
 
   
